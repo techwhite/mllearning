@@ -16,7 +16,7 @@ from sklearn.preprocessing import MinMaxScaler
 scaler = MinMaxScaler(feature_range=(0,1))
 
 # read the file
-df = pd.read_csv('data/NSE-TATAGLOBAL11.csv')
+df = pd.read_csv('~/dev/src/hello/data/NSE-TATAGLOBAL11.csv')
 
 # setting index as date
 df['Date'] = pd.to_datetime(df.Date,format='%Y-%m-%d')
@@ -31,24 +31,21 @@ for i in range(0, len(data)):
     new_data['Close'][i] = data['Close'][i]
 
 # # create features
-# from fastai.structured import add_datepart
-# add_datepart(new_data, 'Date')
-# new_data.drop('Elapsed', axis=1, inplace=True) # elapsed will be the time stamp
+from fastai.structured import add_datepart
+add_datepart(new_data, 'Date')
+new_data.drop('Elapsed', axis=1, inplace=True) # elapsed will be the time stamp
 
 # # more features
-# new_data['mon_fri'] = 0
-# for i in range(0, len(new_data)):
-#     if (new_data['Dayofweek'][i] == 0 or new_data['Dayofweek'][i] == 4):
-#         new_data['mon_fri'][i] = 1
-#     else:
-#         new_data['mon_fri'][i] = 0
+new_data['mon_fri'] = 0
+for i in range(0, len(new_data)):
+   if (new_data['Dayofweek'][i] == 0 or new_data['Dayofweek'][i] == 4):
+      new_data['mon_fri'][i] = 1
+   else:
+      new_data['mon_fri'][i] = 0
 
 # splitting into train and validation
 train = new_data[:987]
 valid = new_data[987:]
-
-new_data.shape, train.shape, valid.shape
-train['Date'].min(), train['Date'].max(), valid['Date'].min(), valid['Date'].max()
 
 x_train = train.drop('Close', axis = 1)
 y_train = train['Close']

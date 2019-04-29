@@ -1,41 +1,41 @@
 
 # %%
-import sys
-sys.path.insert(0, '/home/youyucai/.local/lib/python3.5/site-packages/fastai')
-import fastai
+
 import pandas as pd
 import numpy as np
+from sklearn.preprocessing import MinMaxScaler
+from fastai.structured import add_datepart
+from sklearn.linear_model import LinearRegression
 
 # to plot within notebook
 import matplotlib.pyplot as plt
 
 # setting figure size
 from matplotlib.pylab import rcParams
-rcParams['figure.figsize'] = 20,10
+rcParams['figure.figsize'] = 20, 10
 
 # for normalizing data
-from sklearn.preprocessing import MinMaxScaler
-scaler = MinMaxScaler(feature_range=(0,1))
+scaler = MinMaxScaler(feature_range=(0, 1))
 
 # read the file
-df = pd.read_csv('data/NSE-TATAGLOBAL11.csv')
+df = pd.read_csv('~/dev/src/hello/data/NSE-TATAGLOBAL11.csv')
 
 # setting index as date
-df['Date'] = pd.to_datetime(df.Date,format='%Y-%m-%d')
+df['Date'] = pd.to_datetime(df.Date, format='%Y-%m-%d')
 df.index = df['Date']
 
 # creating dataframe with date and the target variable
 data = df.sort_index(ascending=True, axis=0)
-new_data = pd.DataFrame(index=range(0,len(df)), columns=['Date', 'Close'])
+new_data = pd.DataFrame(index=range(0, len(df)), columns=['Date', 'Close'])
 
 for i in range(0, len(data)):
     new_data['Date'][i] = data['Date'][i]
     new_data['Close'][i] = data['Close'][i]
 
 # # create features
-from fastai.structured import add_datepart
-# add_datepart(new_data, 'Date')
-# new_data.drop('Elapsed', axis=1, inplace=True) # elapsed will be the time stamp
+add_datepart(new_data, 'Date')
+# elapsed will be the time stamp
+new_data.drop('Elapsed', axis=1, inplace=True)
 
 # # more features
 # new_data['mon_fri'] = 0
@@ -50,15 +50,13 @@ train = new_data[:987]
 valid = new_data[987:]
 
 new_data.shape, train.shape, valid.shape
-train['Date'].min(), train['Date'].max(), valid['Date'].min(), valid['Date'].max()
 
-x_train = train.drop('Close', axis = 1)
+x_train = train.drop('Close', axis=1)
 y_train = train['Close']
-x_valid = valid.drop('Close', axis = 1)
+x_valid = valid.drop('Close', axis=1)
 y_valid = valid['Close']
 
 # implement linear regression
-from sklearn.linear_model import LinearRegression
 model = LinearRegression()
 model.fit(x_train, y_train)
 
@@ -75,6 +73,5 @@ train.index = new_data[:987].index
 
 plt.plot(train['Close'])
 plt.plot(valid[['Close', 'Predictions']])
-
 
 # %%
