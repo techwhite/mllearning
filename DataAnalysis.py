@@ -17,7 +17,7 @@ from sklearn.preprocessing import MinMaxScaler
 scaler = MinMaxScaler(feature_range=(0,1))
 
 # read the file
-df = pd.read_csv('~/dev/src/hello/data/NSE-TATAGLOBAL11.csv')
+df = pd.read_csv('~/dev/src/mllearning/data/NSE-TATAGLOBAL11.csv')
 
 # print the head
 df.head

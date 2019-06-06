@@ -4,7 +4,6 @@
 import pandas as pd
 import numpy as np
 from sklearn.preprocessing import MinMaxScaler
-from fastai.structured import add_datepart
 from sklearn.linear_model import LinearRegression
 
 # to plot within notebook
@@ -32,46 +31,39 @@ for i in range(0, len(data)):
     new_data['Date'][i] = data['Date'][i]
     new_data['Close'][i] = data['Close'][i]
 
-# # create features
-add_datepart(new_data, 'Date')
-# elapsed will be the time stamp
-new_data.drop('Elapsed', axis=1, inplace=True)
+#new_data['Date'] = pd.to_datetime(new_data.Date,format='%Y-%m-%d')
+new_data.index = new_data['Date']
 
-# # more features
-# new_data['mon_fri'] = 0
-# for i in range(0, len(new_data)):
-#     if (new_data['Dayofweek'][i] == 0 or new_data['Dayofweek'][i] == 4):
-#         new_data['mon_fri'][i] = 1
-#     else:
-#         new_data['mon_fri'][i] = 0
+# preparing data
+new_data.rename(columns={'Close': 'y', 'Date': 'ds'}, inplace=True)
 
 # splitting into train and validation
 train = new_data[:987]
 valid = new_data[987:]
 
-new_data.shape, train.shape, valid.shape
+# importing prophet
+from fbprophet import Prophet
+model = Prophet()
+model.fit(train)
 
-x_train = train.drop('Close', axis=1)
-y_train = train['Close']
-x_valid = valid.drop('Close', axis=1)
-y_valid = valid['Close']
+# predictions
+close_prices = model.make_future_dataframe(periods=len(valid))
+forecast = model.predict(close_prices)
 
-# implement linear regression
-model = LinearRegression()
-model.fit(x_train, y_train)
+print(close_prices)
+print(forecast)
 
 # make predictions and find the rmse
-preds = model.predict(x_valid)
-rms = np.sqrt(np.mean(np.power((np.array(y_valid)-np.array(preds)), 2)))
-rms
+forecast_valid = forecast['yhat'][987:]
+rms = np.sqrt(np.mean(np.power((np.array(valid['y'])-np.array(forecast_valid)), 2)))
+print(forecast_valid)
+print(rms)
 
 # plot
 valid['Predictions'] = 0
-valid['Predictions'] = preds
-valid.index = new_data[987:].index
-train.index = new_data[:987].index
+valid['Predictions'] = forecast_valid.values
 
-plt.plot(train['Close'])
-plt.plot(valid[['Close', 'Predictions']])
+plt.plot(train['y'])
+plt.plot(valid[['y', 'Predictions']])
 
 # %%
